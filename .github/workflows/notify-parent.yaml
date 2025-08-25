@@ -14,10 +14,18 @@ jobs:
         with:
           github-token: ${{ secrets.PARENT_REPO_TOKEN }}
           script: |
-            await github.rest.actions.createWorkflowDispatch({
-              owner: 'novatrade-co-jp',
-              repo: 'proj-kesion-backend-novatrade',
-              workflow_id: 'sync-sales-sheet.yml',
-              ref: 'develop'
-            });
-            console.log('Triggered sync in parent repo');
+            const parentRepo = '${{ vars.PARENT_REPO || 'devmaster-x/ex_parent' }}';
+            const workflowId = 'sync.yml';
+            
+            try {
+              await github.rest.actions.createWorkflowDispatch({              
+                owner: parentRepo.split('/')[0],
+                repo: parentRepo.split('/')[1],
+                workflow_id: workflowId,
+                ref: 'main'
+              });
+              console.log(`Successfully triggered ${workflowId} in parent repo: ${parentRepo}`);
+            } catch (error) {
+              console.error('Failed to trigger parent repo sync:', error.message);
+              core.setFailed(`Failed to trigger sync: ${error.message}`);
+            }
