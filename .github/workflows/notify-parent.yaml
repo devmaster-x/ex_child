@@ -1,0 +1,23 @@
+name: Notify Parent Repo
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  notify-parent:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Parent Repo Sync
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.PARENT_REPO_TOKEN }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: 'novatrade-co-jp',
+              repo: 'proj-kesion-backend-novatrade',
+              workflow_id: 'sync-sales-sheet.yml',
+              ref: 'develop'
+            });
+            console.log('Triggered sync in parent repo');
